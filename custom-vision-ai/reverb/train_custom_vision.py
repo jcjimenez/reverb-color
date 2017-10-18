@@ -28,7 +28,7 @@ class AllTrainingData(object):
 
     def get_images(self):
         for label in self._get_labels():
-            images = glob(join(self._data_root, label, 'images', '*.jpg'))
+            images = glob(join(self._data_root, label, '**', '*.jpg'), recursive=True)
             yield label, images
 
     def _get_labels(self):
@@ -89,7 +89,7 @@ def _main():
     parser.add_argument('--training_key', required=True)
     parser.add_argument('--data_dir', required=True)
     parser.add_argument('--labels', type=str, default='')
-    parser.add_argument('--max_labels', type=AtMost(50), default=50)
+    parser.add_argument('--max_labels', type=AtMost(100), default=100)
     parser.add_argument('--max_images', type=AtMost(10000), default=1000)
     parser.add_argument('--azure_region', type=str, default='southcentralus')
     args = parser.parse_args()
