@@ -50,3 +50,8 @@ venv/bin/python train_custom_vision.py \
   --data_dir="./reverb-data-320-clean" \
   --max_images=50
 ```
+
+## Development
+
+If you want to add a feature to the `custom_vision_client` library used in the scripts in this folder, open a pull
+request against its repository: [py_custom_vision_client](https://github.com/CatalystCode/py_custom_vision_client).
