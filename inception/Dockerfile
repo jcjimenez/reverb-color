@@ -1,4 +1,4 @@
-FROM tensorflow/tensorflow:1.3.0-py3
+FROM tensorflow/tensorflow:1.3.0-gpu-py3
 LABEL maintainer="jc.jimenez@microsoft.com"
 USER root
 
