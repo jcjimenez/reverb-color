@@ -1,15 +1,4 @@
 #!/usr/bin/env python3
-"""
-Script to train a custom vision classifier based on the Reverb data-set.
-
-Steps to use:
-  0. Download and unpack the reverb training data
-  1. Log into your custom vision account at https://www.customvision.ai
-  2. Head to the settings pane and grab the training key
-  3. Call this script with a project name, the training key and the path to the training data
-  4. Head over to the custom vision portal to check on the training and performance
-
-"""
 
 from argparse import ArgumentTypeError
 from glob import glob
