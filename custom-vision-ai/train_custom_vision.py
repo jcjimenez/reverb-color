@@ -11,6 +11,7 @@ Steps to use:
 
 """
 
+from argparse import ArgumentTypeError
 from glob import glob
 from math import floor
 from os import listdir
@@ -19,6 +20,23 @@ from random import sample
 
 from custom_vision_client import TrainingClient
 from custom_vision_client import TrainingConfig
+
+
+class AtMost(object):
+    def __init__(self, max_value):
+        self._max_value = max_value
+
+    def __call__(self, value):
+        try:
+            number = int(value)
+        except ValueError:
+            raise ArgumentTypeError('Not a number: {}'.format(value))
+
+        if number > self._max_value:
+            raise ArgumentTypeError('Value should be less or equal to {}'
+                                    .format(self._max_value))
+
+        return number
 
 
 class AllTrainingData(object):
@@ -82,7 +100,6 @@ def train(azure_region, project_name, training_key, data_dir,
 
 def _main():
     from argparse import ArgumentParser
-    from reverb.argparse_helper import AtMost
 
     parser = ArgumentParser(description=__doc__)
     parser.add_argument('--project_name', required=True)
