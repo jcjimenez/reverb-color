@@ -8,9 +8,17 @@ To get started with this, run the following:
 docker build .
 ```
 
-Copy the has after at the end of the line that reads like `Successfully built 76ed53a7fe50` and replace `76ed53a7fe50` below:
+Copy the has after at the end of the line that reads like `Successfully built bf2b5ebb6186` and replace `bf2b5ebb6186` with what you see below:
+
 ```
-docker run --rm -v `pwd`:/container/reverb-color -w /container/reverb-color -it -p 8888:8888 76ed53a7fe50 bash
+docker run --rm -v `pwd`:/container/reverb-color -w /container/reverb-color -it -p 8888:8888 bf2b5ebb6186 bash
+```
+
+# Running Prediction
+In order to run prediction against an image, you can do this:
+
+```
+/opt/tensorflow/examples/label_image/label_image --graph=/opt/model/output_graph.pb --labels=/opt/model/output_labels.txt --output_layer=final_result:0 --image=/container/reverb-color/jazzmaster_seafoam_hero.jpg
 ```
 
 # Download an updated model
