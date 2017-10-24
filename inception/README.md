@@ -26,7 +26,7 @@ color-families
 └── blue
     ├── asdfwerusdfjwessdfwe.jpg
     └── qwerasdzzsdfrtwersdf.jpg
-``
+```
 
 Then run something like the following:
 
