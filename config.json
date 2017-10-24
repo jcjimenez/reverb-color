@@ -1,0 +1,57 @@
+{
+  "IamFleetRole": "arn:aws:iam::590710864528:role/aws-ec2-spot-fleet-role",
+  "AllocationStrategy": "lowestPrice",
+  "TargetCapacity": 1,
+  "SpotPrice": "7.2",
+  "ValidFrom": "2017-10-19T14:33:14Z",
+  "ValidUntil": "2018-10-20T04:00:00Z",
+  "TerminateInstancesWithExpiration": false,
+  "LaunchSpecifications": [
+    {
+      "ImageId": "ami-80861296",
+      "InstanceType": "p2.8xlarge",
+      "SubnetId": "subnet-19e1fc42",
+      "KeyName": "staging",
+      "EbsOptimized": true,
+      "SpotPrice": "7.2",
+      "IamInstanceProfile": {
+        "Arn": "arn:aws:iam::590710864528:instance-profile/data-team-ec2"
+      },
+      "BlockDeviceMappings": [
+        {
+          "DeviceName": "/dev/sda1",
+          "Ebs": {
+            "DeleteOnTermination": false,
+            "VolumeType": "gp2",
+            "VolumeSize": 50,
+            "SnapshotId": "snap-066a4d67938024381"
+          }
+        }
+      ],
+      "SecurityGroups": [
+        {
+          "GroupId": "sg-0f7df57d"
+        }
+      ],
+      "UserData": "IyEgL3Vzci9iaW4vZW52IGJhc2gKCnN1ZG8gYXB0LWdldCB1cGRhdGUKc3VkbyBhcHQgaW5zdGFsbCAteSBhd3NjbGkKYXdzIHMzIGNwIHMzOi8vcmV2ZXJiLWRhdGEtdGVhbS9taWNyb3NvZnQtbnZpZGlhL3Nwb3RfYm9vdHN0cmFwLnNoIC4KY2htb2QgK3ggLi9zcG90X2Jvb3RzdHJhcC5zaApzdWRvIC4vc3BvdF9ib290c3RyYXAuc2g=",
+      "TagSpecifications": [
+        {
+          "ResourceType": "instance",
+          "Tags": [
+            {
+              "Key": "team",
+              "Value": "data"
+            },
+            {
+              "Key": "Name",
+              "Value": "tensorflow"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "Type": "maintain",
+  "ReplaceUnhealthyInstances": true,
+  "InstanceInterruptionBehavior": "stop"
+}
