@@ -8,10 +8,10 @@ In order to run prediction against an image, you can do this:
 docker-compose up
 ```
 
-Then make HTTP request to the service with something like:
+Then make HTTP request to the service with something like (make sure commas are URL escaped):
 
 ```
-curl 'http://localhost:8000/v1/finish?image_url=rpxkfvq8wnvui2bxvfif.jpg'
+curl 'http://localhost:8000/v1/finish?image_url=http://res.cloudinary.com/reverb/image/upload/s---YUQ-2CS--/c_thumb%2Ch_320%2Cw_320/rpxkfvq8wnvui2bxvfif.jpg'
 ```
 
 # Retrain the model

@@ -61,15 +61,17 @@ def select_family(families):
         return None
 
 @hug.get('/finish', versions=1, output=hug.output_format.json)
-def predict_finish(image_url):
+def predict_finish(image_url: hug.types.text):
     with MODELS['color-families'].as_default():        
         family_labels = load_labels("model/color-families/labels.txt")
-        base_url = "http://res.cloudinary.com/reverb/image/upload/s---YUQ-2CS--/c_thumb,h_320,w_320"
-        print("Loaded family graph and labels")
-        print(base_url+ '/' + image_url)
-        image_data = requests.get(base_url+ '/' + image_url).content
+        image_data = requests.get(image_url).content
         families = run_graph(image_data, family_labels, "DecodeJpeg/contents:0", "final_result:0", 5)
         selected_family = select_family(families)
+    if not selected_family:
+        return {
+            "color_families": [],
+            "finishes": []
+        }
     finish_graph = tf.Graph()
     finishes = []
     with MODELS[selected_family['name']].as_default():
