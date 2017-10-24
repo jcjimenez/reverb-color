@@ -1,24 +1,17 @@
 # Inception
 This directory contains the implementation proposal based on TensorFlow and Inception v3.
 
-# Setup
-To get started with this, run the following:
-
-```
-docker build .
-```
-
-Copy the has after at the end of the line that reads like `Successfully built 28bb1679335c` and replace `28bb1679335c` with what you see below:
-
-```
-docker run --rm -v `pwd`:/container/reverb-color -w /container/reverb-color -it -p 8888:8888 28bb1679335c bash
-```
-
 # Running Prediction
 In order to run prediction against an image, you can do this:
 
 ```
-/opt/tensorflow/examples/label_image/label_image --graph=/opt/model/output_graph.pb --labels=/opt/model/output_labels.txt --output_layer=final_result:0 --input_width=320 --input_height=320 --image=/container/reverb-color/jazzmaster_seafoam_hero.jpg
+docker-compose up
+```
+
+Then make HTTP request to the service with something like:
+
+```
+curl 'http://localhost:8000/v1/finish?image_url=rpxkfvq8wnvui2bxvfif.jpg'
 ```
 
 # Retrain the model
