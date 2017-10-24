@@ -5,7 +5,6 @@ import requests
 import tensorflow as tf
 import os
 
-
 def load_graph(filename):
     """Unpersists graph from file as default graph."""
     with tf.gfile.FastGFile(filename, 'rb') as f:
@@ -13,27 +12,19 @@ def load_graph(filename):
         graph_def.ParseFromString(f.read())
         tf.import_graph_def(graph_def, name='')
 
-
 MODELS = {
     'color-families': tf.Graph(),
     'green': tf.Graph()
 }
-
 
 for k in MODELS:
     graph = MODELS[k]
     with graph.as_default():
         load_graph(os.path.join("model", k, "graph.pb"))
 
-def load_image(filename):
-  """Read in the image_data to be classified."""
-  return tf.gfile.FastGFile(filename, 'rb').read()
-
-
 def load_labels(filename):
   """Read in labels, one label per line."""
   return [line.rstrip() for line in tf.gfile.GFile(filename)]
-
 
 def run_graph(image_data, labels, input_layer_name, output_layer_name, num_top_predictions):
     """
@@ -55,11 +46,8 @@ def run_graph(image_data, labels, input_layer_name, output_layer_name, num_top_p
         top_k = predictions.argsort()[-num_top_predictions:][::-1]
         response = list()
         for node_id in top_k:
-            print("node_id: %s", node_id)
-            print("labels: %s", labels)
             human_string = labels[node_id]
             score = predictions[node_id]
-            print('%s (score = %.5f)' % (human_string, score))
             response.append({
                 "name": human_string, 
                 "score": float(score)
@@ -73,7 +61,7 @@ def select_family(families):
         return None
 
 @hug.get('/finish', versions=1, output=hug.output_format.json)
-def predict(image_url):
+def predict_finish(image_url):
     with MODELS['color-families'].as_default():        
         family_labels = load_labels("model/color-families/labels.txt")
         base_url = "http://res.cloudinary.com/reverb/image/upload/s---YUQ-2CS--/c_thumb,h_320,w_320"
@@ -94,11 +82,3 @@ def predict(image_url):
         "color_families": families,
         "finishes": finishes
     }
-
-@hug.get('/echo', versions=1)
-def echo(text):
-    return text
-
-@hug.get('/unversioned')
-def hello():
-    return 'Hello world!'
