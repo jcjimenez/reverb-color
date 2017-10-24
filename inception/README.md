@@ -1,5 +1,5 @@
 # Inception
-This directory contains the implementation proposal based on TensorFlow and Inception v3.
+This directory contains a  implementation proposal based on TensorFlow and Inception v3.
 
 # Running Prediction
 In order to run prediction against an image, you can do this:
@@ -15,12 +15,34 @@ curl 'http://localhost:8000/v1/finish?image_url=rpxkfvq8wnvui2bxvfif.jpg'
 ```
 
 # Retrain the model
-To retrain the model, ensure you have a list of images like the ones in https://reverb904af5d223d2.blob.core.windows.net/training/reverb-data-320-clean.zip
-then run something like the following:
+Make sure you have a directory that contains directories representing image
+classes that looks something like this:
 
 ```
-/opt/tensorflow/examples/image_retraining/retrain --image_dir /container/reverb-color/reverb-data-320-clean
+color-families
+├── green
+│   ├── qweixldfjuwendksirns.jpg
+│   └── rpxkfvq8wnvui2bxvfif.jpg
+└── blue
+    ├── asdfwerusdfjwessdfwe.jpg
+    └── qwerasdzzsdfrtwersdf.jpg
+``
+
+Then run something like the following:
+
+```
+python3 retrain.py --image_dir color-families --output_graph models/color-families/graph.pb --output_labels models/color-families/labels.txt
 ```
 
-The model files will be output to /tmp/output_graph.pb and /tmp/output_labels.txt
+The model files should be saved in a way that follows this directory structure:
+
+```
+model
+├── color-families
+│   ├── graph.pb
+│   └── labels.txt
+└── green
+    ├── graph.pb
+    └── labels.txt
+```
 
