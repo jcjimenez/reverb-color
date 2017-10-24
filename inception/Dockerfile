@@ -15,6 +15,5 @@ RUN apt-get install \
     bazel \
     -y
 
-RUN curl https://reverb904af5d223d2.blob.core.windows.net/training/tensorflow-ubuntu-2017-10-18.tgz | tar xz -C /opt/
-RUN curl https://reverb904af5d223d2.blob.core.windows.net/training/inceptionv3-model-2017-10-17.tgz | tar xz -C /opt/
+RUN pip3 install hug
 

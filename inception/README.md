@@ -31,13 +31,3 @@ then run something like the following:
 
 The model files will be output to /tmp/output_graph.pb and /tmp/output_labels.txt
 
-# Build Inception From Source
-You may, at some point, need to build tensorflow/inception from source, you can run the following commands:
-
-```
-git clone git@github.com:tensorflow/tensorflow.git
-cd tensorflow/
-./configure
-bazel build --local_resources 2048,.5,1.0 tensorflow/examples/image_retraining:retrain
-```
-
