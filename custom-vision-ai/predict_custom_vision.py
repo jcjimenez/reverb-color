@@ -50,12 +50,13 @@ async def predict(request: Request):
 
 def _main():
     from argparse import ArgumentParser
-    from argparse import FileType
     from json import load
+    from json import loads
     from multiprocessing import cpu_count
+    from os.path import isfile
 
     parser = ArgumentParser(description=__doc__)
-    parser.add_argument('--models', type=FileType('r'), required=True)
+    parser.add_argument('--models', type=str, required=True)
     parser.add_argument('--host', type=str, default='0.0.0.0')
     parser.add_argument('--port', type=int, default=8080)
     parser.add_argument('--workers', type=int, default=cpu_count())
@@ -63,7 +64,11 @@ def _main():
     args = parser.parse_args()
 
     app.config.azure_region = args.azure_region
-    app.config.models = load(args.models)
+    if isfile(args.models):
+        app.config.models = load(args.models)
+        args.models.close()
+    else:
+        app.config.models = loads(args.models)
     app.run(host=args.host, port=args.port, workers=args.workers)
 
 
