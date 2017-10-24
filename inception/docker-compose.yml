@@ -7,4 +7,6 @@ services:
       - "8000:8000"
     volumes:
       - ./model:/model
+      - ./:/reverb-color
+    working_dir: /reverb-color
     command: hug -f predict.py

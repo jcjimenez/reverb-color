@@ -4,3 +4,6 @@ reverb-data-320-clean/
 *.zip
 *.tgz
 
+.vscode/
+__pycache__/
+
