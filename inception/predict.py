@@ -35,10 +35,12 @@ def run_graph(image_data, labels, input_layer_name, output_layer_name, num_top_p
         ]
     """
     with tf.Session() as sess:
-        # Feed the image_data as input to the graph.
-        #   predictions will contain a two-dimensional array, where one
-        #   dimension represents the input image count, and the other has
-        #   predictions per class
+        """
+        Feed the image_data as input to the graph.
+           predictions will contain a two-dimensional array, where one
+           dimension represents the input image count, and the other has
+           predictions per class
+        """
         softmax_tensor = sess.graph.get_tensor_by_name(output_layer_name)
         predictions, = sess.run(softmax_tensor, {input_layer_name: image_data})
 
@@ -78,7 +80,6 @@ def predict_finish(image_url: hug.types.text):
         if select_family:
             finish_model_base = os.path.join("model", selected_family["name"])
             finish_labels = load_labels(os.path.join(finish_model_base, "labels.txt"))
-            print("Finish graph and labels loaded")
             finishes = run_graph(image_data, finish_labels, "DecodeJpeg/contents:0", "final_result:0", 5)
     return {
         "color_families": families,
