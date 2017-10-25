@@ -99,6 +99,8 @@ def predict_finish(image_url: hug.types.text):
     input_layer = "input"
     output_layer = "final_result"
 
+    # TODO: Re-use image tensor.
+    # TODO: Ensure incoming image is 128x128. 
     with MODELS['color-families'].as_default():
         family_label_path = "model/color-families/labels.txt"
         families = run_graph_v2(MODELS['color-families'], image_url, family_label_path)
