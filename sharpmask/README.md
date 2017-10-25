@@ -18,7 +18,7 @@ requires ruby.
 sudo ./dev/build
 ```
 
-## Running container
+## Running api service
 
 ```
 sudo ./dev/run
@@ -28,7 +28,7 @@ sudo ./dev/run
 
 Assuming you have a set of images plus bboxes.tsv files created by [VoTT](https://github.com/CatalystCode/VoTT), you can run `./scripts/tsv-to-annotations-json /path/to/images/and/tsvs ./data` to generate the training data.
 
-Then, run `sudo ./dev/run` to enter the docker container. Then:
+Then, run `sudo ./dev/console` to enter the docker container. Then:
 
 ```
 th train.lua -datadir ~/data -rundir ~/data/exps # kill this after desired amount of time
@@ -37,6 +37,14 @@ th train.lua -datadir ~/data -rundir ~/data/exps -dm ~/data/exps/deepmask/exp/be
 
 ## Running model
 
+Inside the container (`sudo ./dev/console`):
+
 ```
 th creatMask.lua ~/data/exps/sharpmask/exp/bestmodel.t7 -img /path/to/img -output ~/data/out.jpg
+```
+
+Via http:
+
+```
+curl -XPOST host:8888/mask -d '{"image":"https://reverb.com/image_url"}' > response.jpg
 ```
