@@ -1,0 +1,118 @@
+#! /usr/bin/env ruby
+
+# This is a messy script that converts VoTT-generated bbox files into the coco annotation format
+
+require 'json'
+require 'time'
+require 'fileutils'
+
+def current_timestamp
+  Time.now.strftime('%Y-%m-%d %H:%m:%S')
+end
+
+def create_output
+  {
+    info: {
+      description: 'Reverb images dataset',
+      url: 'https://reverb.com',
+      version: '1.0',
+      year: 2017,
+      contributor: 'Reverb.com',
+      date_created: current_timestamp
+    },
+    images: [
+    ],
+    licenses: [
+      {
+        url: 'http://creativecommons.org/licenses/by/2.0/',
+        id: 1,
+        name: 'Attribution License'
+      }
+    ],
+    annotations: [
+    ],
+    categories: [
+      {
+        supercategory: 'guitar-body',
+        id: 1,
+        name: 'guitar-body'
+      }
+    ]
+  }
+end
+
+def add_image(file_name, output, id)
+  full_image_path = file_name.sub(/\..*$/, '') + '.jpg'
+  image_file = full_image_path.sub(/^.*\//, '')
+  image_url = "http://res.cloudinary.com/reverb/image/upload/c_thumb,h_400,w_400/#{image_file}"
+  image_data = {
+    license: 1,
+    file_name: image_file,
+    coco_url: image_url,
+    height: 400,
+    width: 400,
+    date_captured: current_timestamp,
+    flickr_url: image_url,
+    id: id
+  }
+  bbox = File.read(file_name).split.map(&:to_i)
+  height = bbox[2] - bbox[0]
+  width = bbox[3] - bbox[1]
+  output[:images].push image_data
+  annotation = {
+    segmentation: [
+      [
+        bbox[0],
+        bbox[1],
+        bbox[0],
+        bbox[3],
+        bbox[2],
+        bbox[3],
+        bbox[2],
+        bbox[1]
+      ]
+    ],
+    area: height * width,
+    iscrowd: 0,
+    image_id: id,
+    bbox: [
+      bbox[0],
+      bbox[1],
+      height,
+      width
+    ],
+    category_id: 1,
+    id: id
+  }
+  output[:annotations].push annotation
+  full_image_path
+end
+
+source_dir = ARGV[0]
+output_dir = ARGV[1]
+
+if !(source_dir && output_dir)
+  puts "Usage #{$0} [source] [output]"
+  exit 1
+end
+
+train = create_output
+val = create_output
+
+FileUtils.mkdir_p("#{output_dir}/train2014/")
+FileUtils.mkdir_p("#{output_dir}/val2014/")
+FileUtils.mkdir_p("#{output_dir}/annotations/")
+current_id = 1
+Dir.glob("#{source_dir}/*.bboxes.tsv").each do |file_name|
+  if current_id < 150
+    image_file = add_image(file_name, train, current_id)
+    FileUtils.cp(image_file, "#{output_dir}/train2014/")
+  else
+    image_file = add_image(file_name, val, current_id)
+    FileUtils.cp(image_file, "#{output_dir}/val2014/")
+  end
+  current_id += 1
+end
+
+File.open("#{output_dir}/annotations/instances_train2014.json", 'wb') { |file| file.puts train.to_json }
+File.open("#{output_dir}/annotations/instances_val2014.json", 'wb') { |file| file.puts val.to_json }
