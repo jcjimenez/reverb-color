@@ -50,25 +50,18 @@ async def predict(request: Request):
 
 def _main():
     from argparse import ArgumentParser
-    from json import load
     from json import loads
     from multiprocessing import cpu_count
-    from os.path import isfile
+    from os import getenv
 
     parser = ArgumentParser(description=__doc__)
-    parser.add_argument('--models', type=str, required=True)
     parser.add_argument('--host', type=str, default='0.0.0.0')
-    parser.add_argument('--port', type=int, default=8080)
+    parser.add_argument('--port', type=int, default=8000)
     parser.add_argument('--workers', type=int, default=cpu_count())
-    parser.add_argument('--azure_region', type=str, default='southcentralus')
     args = parser.parse_args()
 
-    app.config.azure_region = args.azure_region
-    if isfile(args.models):
-        app.config.models = load(args.models)
-        args.models.close()
-    else:
-        app.config.models = loads(args.models)
+    app.config.azure_region = getenv('CVAI_REGION', 'southcentralus')
+    app.config.models = loads(getenv('CVAI_MODELS', ''))
     app.run(host=args.host, port=args.port, workers=args.workers)
 
 
