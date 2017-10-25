@@ -15,6 +15,6 @@ RUN apt-get install \
     bazel \
     -y
 
-RUN pip3 install hug
+RUN pip3 install hug hug_middleware_cors
 
 ENV TF_MODEL_URL "https://reverb904af5d223d2.blob.core.windows.net/training/model-2017-11-24.tgz"
