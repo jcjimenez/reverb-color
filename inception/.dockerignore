@@ -6,5 +6,3 @@ reverb-data-320-clean/
 *.tgz
 
 .vscode/
-__pycache__/
-

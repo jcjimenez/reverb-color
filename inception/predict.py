@@ -1,9 +1,12 @@
+from glob import glob
+from os import getenv
+from os.path import join
+from shutil import unpack_archive
+
 import hug
-import argparse
-import sys
 import requests
 import tensorflow as tf
-import os
+
 
 def load_graph(filename):
     """Unpersists graph from file as default graph."""
@@ -12,19 +15,36 @@ def load_graph(filename):
         graph_def.ParseFromString(f.read())
         tf.import_graph_def(graph_def, name='')
 
+
+def download_file(url, to_path='', chunk_size=1024):
+    local_filename = to_path or url.split('/')[-1]
+
+    response = requests.get(url, stream=True)
+    with open(local_filename, 'wb') as fobj:
+        for chunk in response.iter_content(chunk_size=chunk_size):
+            if chunk:
+                fobj.write(chunk)
+
+
+if not glob(join('model', '*')):
+    download_file(getenv('TF_MODEL_URL'), 'model.tgz')
+    unpack_archive('model.tgz')
+
+
 MODELS = {
     'color-families': tf.Graph(),
     'green': tf.Graph()
 }
 
-for k in MODELS:
-    graph = MODELS[k]
+for k, graph in MODELS.items():
     with graph.as_default():
-        load_graph(os.path.join("model", k, "graph.pb"))
+        load_graph(join("model", k, "graph.pb"))
+
 
 def load_labels(filename):
-  """Read in labels, one label per line."""
-  return [line.rstrip() for line in tf.gfile.GFile(filename)]
+    """Read in labels, one label per line."""
+    return [line.rstrip() for line in tf.gfile.GFile(filename)]
+
 
 def run_graph(image_data, labels, input_layer_name, output_layer_name, num_top_predictions):
     """
@@ -51,10 +71,11 @@ def run_graph(image_data, labels, input_layer_name, output_layer_name, num_top_p
             human_string = labels[node_id]
             score = predictions[node_id]
             response.append({
-                "name": human_string, 
+                "name": human_string,
                 "score": float(score)
             })
         return response
+
 
 def select_family(families):
     if len(families):
@@ -62,25 +83,29 @@ def select_family(families):
     else:
         return None
 
+
 @hug.get('/finish', versions=1, output=hug.output_format.json)
 def predict_finish(image_url: hug.types.text):
-    with MODELS['color-families'].as_default():        
+    with MODELS['color-families'].as_default():
         family_labels = load_labels("model/color-families/labels.txt")
         image_data = requests.get(image_url).content
         families = run_graph(image_data, family_labels, "DecodeJpeg/contents:0", "final_result:0", 5)
         selected_family = select_family(families)
+
     if not selected_family:
         return {
             "color_families": [],
             "finishes": []
         }
-    finish_graph = tf.Graph()
+
     finishes = []
+
     with MODELS[selected_family['name']].as_default():
         if select_family:
-            finish_model_base = os.path.join("model", selected_family["name"])
-            finish_labels = load_labels(os.path.join(finish_model_base, "labels.txt"))
+            finish_model_base = join("model", selected_family["name"])
+            finish_labels = load_labels(join(finish_model_base, "labels.txt"))
             finishes = run_graph(image_data, finish_labels, "DecodeJpeg/contents:0", "final_result:0", 5)
+
     return {
         "color_families": families,
         "finishes": finishes
