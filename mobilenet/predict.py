@@ -73,7 +73,6 @@ def run_graph_v2(graph, image_url, label_path, input_layer="input", output_layer
                                 input_width=128,
                                 input_mean=128,
                                 input_std=128)
-    print("image tensor: %s" % image_tensor)
     input_name = "import/" + input_layer
     output_name = "import/" + output_layer
     input_operation = graph.get_operation_by_name(input_name);
@@ -86,7 +85,6 @@ def run_graph_v2(graph, image_url, label_path, input_layer="input", output_layer
     labels = load_labels(label_path)
     response = list()
     for i in top_k:
-        print(labels[i], results[i])
         response.append({
             "name": labels[i], 
             "score": float(results[i])
