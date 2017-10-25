@@ -1,0 +1,65 @@
+<html>
+  <head>
+    <title>Reverb finish detection test page</title>
+  </head>
+  <body>
+    <form>
+      <select id="service">
+        <option value="http://reverbcvserver.eastus.cloudapp.azure.com">CustomVision.ai</option>
+        <option value="http://reverbcvserver.eastus.cloudapp.azure.com:8000">Inception</option>
+      </select>
+
+      <input id="url" placeholder="Insert URL to image to analyze here">
+
+      <button type="submit" id="analyze">Analyze!</button>
+    </form>
+
+    <pre id="runtime"></pre>
+    <pre id="result"></pre>
+
+    <script>
+      function http_get_json(url, callback) {
+        var http_request = new XMLHttpRequest();
+        http_request.onreadystatechange = function() {
+          if (http_request.readyState == 4 && http_request.status == 200) {
+            try {
+              callback(null, JSON.parse(http_request.responseText));
+            } catch (e) {
+              callback(e, null);
+            }
+          }
+        };
+        http_request.open('GET', url, true);
+        http_request.send(null);
+      }
+
+      var service_input = document.getElementById('service');
+      var url_input = document.getElementById('url');
+      var result_output = document.getElementById('result');
+      var runtime_output = document.getElementById('runtime');
+      var analyze_trigger = document.getElementById('analyze');
+
+      analyze_trigger.addEventListener('click', function() {
+        var request_url = service_input.value + '/v1/finish?image_url=' + encodeURIComponent(url_input.value);
+        var request_start = new Date();
+        http_get_json(request_url, function(error, data) {
+          var request_end = new Date();
+          if (error) {
+            console.error(request_url);
+            console.error(error);
+            result_output.innerHTML = 'ERROR';
+          } else {
+            console.log(request_url);
+            console.log(data);
+            result_output.innerHTML = JSON.stringify(data, null, 2);
+          }
+          analyze_trigger.disabled = false;
+          analyze_trigger.innerHTML = 'Analyze!';
+          runtime_output.innerHTML = 'Runtime: ' + (request_end - request_start) + 'ms';
+        });
+        analyze_trigger.disabled = true;
+        analyze_trigger.innerHTML = '&hellip;';
+      });
+    </script>
+  </body>
+</html>
