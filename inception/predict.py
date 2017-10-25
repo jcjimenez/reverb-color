@@ -1,4 +1,7 @@
+from os import getenv
+from os.path import isdir
 from os.path import join
+from shutil import unpack_archive
 
 import hug
 import requests
@@ -11,6 +14,21 @@ def load_graph(filename):
         graph_def = tf.GraphDef()
         graph_def.ParseFromString(f.read())
         tf.import_graph_def(graph_def, name='')
+
+
+def download_file(url, to_path='', chunk_size=1024):
+    local_filename = to_path or url.split('/')[-1]
+
+    response = requests.get(url, stream=True)
+    with open(local_filename, 'wb') as fobj:
+        for chunk in response.iter_content(chunk_size=chunk_size):
+            if chunk:
+                fobj.write(chunk)
+
+
+if not isdir('model'):
+    download_file(getenv('TF_MODEL_URL'), 'model.tgz')
+    unpack_archive('model.tgz')
 
 
 MODELS = {
