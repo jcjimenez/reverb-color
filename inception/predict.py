@@ -1,5 +1,5 @@
+from glob import glob
 from os import getenv
-from os.path import isdir
 from os.path import join
 from shutil import unpack_archive
 
@@ -26,7 +26,7 @@ def download_file(url, to_path='', chunk_size=1024):
                 fobj.write(chunk)
 
 
-if not isdir('model'):
+if not glob(join('model', '*')):
     download_file(getenv('TF_MODEL_URL'), 'model.tgz')
     unpack_archive('model.tgz')
 
