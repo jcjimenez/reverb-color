@@ -16,7 +16,10 @@ CORS(app)
 
 
 def _classify(model_name: Text, image_url: Text) -> List[Prediction]:
-    model = app.config.models[model_name]
+    model = app.config.models.get(model_name)
+    if not model:
+        return []
+
     region = app.config.azure_region
     project_id = model['project_id']
     prediction_key = model['prediction_key']
@@ -40,13 +43,18 @@ def _to_dto(predictions: List[Prediction]) -> List[Dict]:
 async def predict(request: Request):
     image_url = request.args.get('image_url')
 
-    family_predictions = _classify('__ROOT__', image_url)
-    finish_family = max(family_predictions, key=lambda _: _.Probability).Tag
-    finish_predictions = _classify(finish_family, image_url)
+    model_name = '__ROOT__'
+    finishes = []
+    while True:
+        predictions = _classify(model_name, image_url)
+        if not predictions:
+            break
+        finishes.extend(predictions)
+        model_name = max(predictions, key=lambda _: _.Probability).Tag
 
     return json({
-        'color_families': _to_dto(family_predictions),
-        'finishes': _to_dto(finish_predictions),
+        'color_families': [],
+        'finishes': _to_dto(finishes),
     })
 
 
