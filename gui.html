@@ -119,11 +119,8 @@
           if (error) {
             handleError(error);
           } else {
-            console.log(request_url);
-            console.log(data);
             result_output.innerHTML = JSON.stringify(data, null, 2);
-            var best_family = data.color_families.sort(function(a, b) { return a.score < b.score; })[0];
-            var best_finish = data.finishes.sort(function(a, b) { return a.score < b.score; })[0];
+            var best_finish = data.finishes.reduce(function(a, b) { return a.score > b.score ? a : b; });
             var summary = 'Most likely <em>' + best_finish.name + '</em>';
             if (true_label) {
               if (true_label === best_finish.name) {
