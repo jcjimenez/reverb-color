@@ -1,5 +1,5 @@
-# Inception
-This directory contains a  implementation proposal based on TensorFlow and Inception v3.
+# Mobilenet
+This directory contains a  implementation proposal based on TensorFlow and Mobilenet.
 
 # Running Prediction
 In order to run prediction against an image, you can do this:
@@ -15,8 +15,8 @@ curl 'http://localhost:8000/v1/finish?image_url=http://res.cloudinary.com/reverb
 ```
 
 # Retrain the model
-Make sure you have a directory that contains directories representing image
-classes that looks something like this:
+Make sure you have a directory that contains directories representing 128x128
+image classes that looks something like this:
 
 ```
 color-families
