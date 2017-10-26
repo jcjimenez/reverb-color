@@ -105,8 +105,9 @@ def predict_finish(image_url: hug.types.text):
 
     finishes = []
 
-    with MODELS[selected_family['name']].as_default():
-        if select_family:
+    model = MODELS.get(selected_family['name'])
+    if model:
+        with model.as_default():
             finish_model_base = join("model", selected_family["name"])
             finish_labels = load_labels(join(finish_model_base, "labels.txt"))
             finishes = run_graph(image_data, finish_labels, "DecodeJpeg/contents:0", "final_result:0", 5)
