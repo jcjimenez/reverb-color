@@ -39,21 +39,27 @@ def _to_dto(predictions: List[Prediction]) -> List[Dict]:
     return [{'score': _.Probability, 'name': _.Tag} for _ in predictions]
 
 
+def _flatten(nested):
+    return [item for sublist in nested for item in sublist]
+
+
 @app.route('/v1/finish')
 async def predict(request: Request):
     image_url = request.args.get('image_url')
 
     model_name = '__ROOT__'
+    color_families = []
     finishes = []
     while True:
         predictions = _classify(model_name, image_url)
         if not predictions:
             break
-        finishes.extend(predictions)
+        color_families.append(predictions)
+        finishes = predictions
         model_name = max(predictions, key=lambda _: _.Probability).Tag
 
     return json({
-        'color_families': [],
+        'color_families': _to_dto(_flatten(color_families[:-1])),
         'finishes': _to_dto(finishes),
     })
 
