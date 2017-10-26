@@ -59,7 +59,7 @@ def generate_models(model_paths, architecture, output_dir):
         subprocess.call(retrain_command)
 
 parser = argparse.ArgumentParser(description= 'Generate Inception or Mobilenet models')
-parser.add_argument("--image-dir", dest='image_directory', required=True)
+parser.add_argument("--image_dir", dest='image_directory', required=True)
 parser.add_argument("--architecture", dest='architecture', type=str, default="mobilenet_0.25_128_quantized")
 parser.add_argument("--output_dir", dest="output_dir", type=str, default="model")
 args = parser.parse_args()
