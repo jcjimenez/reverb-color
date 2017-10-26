@@ -1,0 +1,4 @@
+{"models":[
+  {"url":"http://reverbcvserver.eastus.cloudapp.azure.com","name":"CustomVision.ai"},
+  {"url":"http://reverbcvserver.eastus.cloudapp.azure.com:8000","name":"Inception"}
+]}

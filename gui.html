@@ -41,22 +41,20 @@
     </style>
   </head>
   <body>
-    <select id="service">
-      <option value="http://reverbcvserver.eastus.cloudapp.azure.com">CustomVision.ai</option>
-      <option value="http://reverbcvserver.eastus.cloudapp.azure.com:8000">Inception</option>
-    </select>
-
+    <select id="service"></select>
     <input id="url" type="url" placeholder="Insert URL to image to analyze here">
-
     <button id="analyze">Analyze!</button>
 
     <div id="samples"></div>
     <img id="image" src="" style="display:none;">
+
     <pre id="summary"></pre>
     <pre id="runtime"></pre>
     <pre id="result"></pre>
 
     <script>
+      var STORAGE_ROOT = 'https://reverbinception.blob.core.windows.net';
+
       function http_get_json(url, callback) {
         var http_request = new XMLHttpRequest();
         http_request.onreadystatechange = function() {
@@ -85,6 +83,19 @@
       var summary_output = document.getElementById('summary');
       var analyze_trigger = document.getElementById('analyze');
       var image_output = document.getElementById('image');
+
+      http_get_json(STORAGE_ROOT + '/models/demo/manifest.json', function(error, data) {
+        if (error) {
+         handleError(error);
+        } else {
+          data.models.forEach(function(model) {
+            var option = document.createElement('option');
+            option.value = model.url;
+            option.textContent = model.name;
+            service_input.appendChild(option);
+          });
+        }
+      });
 
       var classifier_is_running = false;
 
@@ -137,14 +148,13 @@
         run_classifier(null);
       });
 
-      var sample_images_root = 'https://reverbinception.blob.core.windows.net/images/validation'
-      http_get_json(sample_images_root + '/manifest.json', function(error, data) {
+      http_get_json(STORAGE_ROOT + '/images/validation/manifest.json', function(error, data) {
         if (error) {
           handleError(error);
         } else {
           data.images.forEach(function(image) {
             var img = document.createElement('img');
-            img.src = sample_images_root + image.url;
+            img.src = STORAGE_ROOT + '/images/validation/' + image.url;
             img.addEventListener('click', function() {
               url_input.value = img.src;
               var url_parts = image.url.split('/');
