@@ -17,4 +17,4 @@ RUN apt-get install \
 
 RUN pip3 install hug hug_middleware_cors
 
-ENV TF_MODEL_URL "https://reverb904af5d223d2.blob.core.windows.net/training/model-2017-11-24.tgz"
+ENV TF_MODEL_URL "https://reverb904af5d223d2.blob.core.windows.net/training/model-inception-2017-10-26.tgz"

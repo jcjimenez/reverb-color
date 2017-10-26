@@ -40,7 +40,7 @@ def read_tensor_from_image_file(image_url, input_height=128, input_width=128, in
 
 def load_labels(label_file):
   proto_as_ascii_lines = tf.gfile.GFile(label_file).readlines()
-  return [l.rstrip() for l in proto_as_ascii_lines]
+  return [l.rstrip().replace(" ", "-") for l in proto_as_ascii_lines]
 
 def select_family(families):
     return families[0] if len(families) else None

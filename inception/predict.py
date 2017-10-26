@@ -35,20 +35,28 @@ if not glob(join('model', '*')):
     download_file(getenv('TF_MODEL_URL'), 'model.tgz')
     unpack_archive('model.tgz')
 
-
 MODELS = {
+    'black': tf.Graph(),
+    'blue': tf.Graph(),
+    'brown': tf.Graph(),
+    'burst': tf.Graph(),
     'color-families': tf.Graph(),
-    'green': tf.Graph()
+    'green': tf.Graph(),
+    'orange': tf.Graph(),
+    'red': tf.Graph(),
+    'white': tf.Graph(),
+    'yellow': tf.Graph()
 }
 
 for k, graph in MODELS.items():
+    print("Loading model %s" % k)
     with graph.as_default():
         load_graph(join("model", k, "graph.pb"))
 
 
 def load_labels(filename):
     """Read in labels, one label per line."""
-    return [line.rstrip() for line in tf.gfile.GFile(filename)]
+    return [line.rstrip().replace(" ", "-") for line in tf.gfile.GFile(filename)]
 
 
 def run_graph(image_data, labels, input_layer_name, output_layer_name, num_top_predictions):
