@@ -20,7 +20,7 @@ def _classify(model_name: Text, image_url: Text) -> List[Prediction]:
     region = app.config.azure_region
     project_id = model['project_id']
     prediction_key = model['prediction_key']
-    model_id = model['model_id']
+    model_id = model.get('model_id')
 
     client = PredictionClient(PredictionConfig(
         region=region,
