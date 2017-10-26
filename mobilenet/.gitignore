@@ -1,0 +1,10 @@
+bin/label_image/
+model/
+model-mobilenet_0.25_128_quantized/
+reverb-data-320-clean/
+*.zip
+*.tgz
+
+.vscode/
+__pycache__/
+
