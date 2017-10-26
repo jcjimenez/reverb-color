@@ -16,3 +16,7 @@ RUN apt-get install \
     -y
 
 RUN pip3 install hug hug_middleware_cors
+
+ADD predict.py /app/server.py
+EXPOSE 80
+CMD ["hug", "-f", "/app/server.py", "--port", "80"]
