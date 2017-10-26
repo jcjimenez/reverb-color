@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <title>Reverb finish detection test page</title>
+
     <style>
       body {
         font-size: 1.25em;
@@ -41,6 +42,7 @@
     </style>
   </head>
   <body>
+
     <select id="service"></select>
     <input id="url" type="url" placeholder="Insert URL to image to analyze here">
     <button id="analyze">Analyze!</button>
@@ -52,9 +54,26 @@
     <pre id="runtime"></pre>
     <pre id="result"></pre>
 
+    <!-- constants -->
     <script>
       var STORAGE_ROOT = 'https://reverbinception.blob.core.windows.net';
 
+      var SAMPLES_INPUT = document.getElementById('samples');
+      var SERVICE_INPUT = document.getElementById('service');
+      var URL_INPUT = document.getElementById('url');
+      var RESULT_OUTPUT = document.getElementById('result');
+      var RUNTIME_OUTPUT = document.getElementById('runtime');
+      var SUMMARY_OUTPUT = document.getElementById('summary');
+      var ANALYZE_TRIGGER = document.getElementById('analyze');
+      var IMAGE_OUTPUT = document.getElementById('image');
+
+      var STATE = {
+        classifier_is_running: false
+      };
+    </script>
+
+    <!-- helpers -->
+    <script>
       function http_get_json(url, callback) {
         var http_request = new XMLHttpRequest();
         http_request.onreadystatechange = function() {
@@ -75,15 +94,62 @@
         alert('Something went wrong :(');
       }
 
-      var samples_input = document.getElementById('samples');
-      var service_input = document.getElementById('service');
-      var url_input = document.getElementById('url');
-      var result_output = document.getElementById('result');
-      var runtime_output = document.getElementById('runtime');
-      var summary_output = document.getElementById('summary');
-      var analyze_trigger = document.getElementById('analyze');
-      var image_output = document.getElementById('image');
+      function run_classifier(true_label) {
+        if (STATE.classifier_is_running) { return; }
+        STATE.classifier_is_running = true;
+        var request_start = new Date();
+        var request_url = SERVICE_INPUT.value + '/v1/finish?image_url=' + encodeURIComponent(URL_INPUT.value);
+        http_get_json(request_url, function(error, data) {
+          var request_end = new Date();
+          if (error) {
+            handleError(error);
+          } else {
+            RESULT_OUTPUT.innerHTML = JSON.stringify(data, null, 2);
+            var best_finish = data.finishes.reduce(function(a, b) { return a.score > b.score ? a : b; }, {score: -1, name: 'unclassified'});
+            if (!best_finish) {
+              best_finish = data.color_families.reduce(function(a, b) { return a.score > b.score ? a : b; }, {score: -1, name: 'unclassified'});
+            }
+            var summary = 'Model predicts: <em>' + best_finish.name + '</em>';
+            if (true_label) {
+              if (true_label === best_finish.name) {
+                summary += ' <span class="correct">&#10004;</span>';
+              } else {
+                summary += ' <span class="incorrect">&#10008; (real label: ' + true_label + ')</span>';
+              }
+            }
+            SUMMARY_OUTPUT.innerHTML = summary;
+          }
+          RUNTIME_OUTPUT.innerHTML = 'Runtime: ' + (request_end - request_start) + 'ms';
+          ANALYZE_TRIGGER.disabled = false;
+          ANALYZE_TRIGGER.innerHTML = 'Analyze!';
+          STATE.classifier_is_running = false;
+        });
+        ANALYZE_TRIGGER.disabled = true;
+        ANALYZE_TRIGGER.innerHTML = '&hellip;';
+        RESULT_OUTPUT.innerHTML = '&hellip;';
+        SUMMARY_OUTPUT.innerHTML = '&hellip;';
+        RUNTIME_OUTPUT.innerHTML = '&hellip;';
+        IMAGE_OUTPUT.src = URL_INPUT.value;
+        IMAGE_OUTPUT.style = 'display:block;';
+      }
+    </script>
 
+    <!-- event listeners -->
+    <script>
+      ANALYZE_TRIGGER.addEventListener('click', function() {
+        run_classifier(null);
+      });
+
+      URL_INPUT.addEventListener('keyup', function(e) {
+        if (e.keyCode === 13 || e.which === 13) {
+          ANALYZE_TRIGGER.click();
+          e.preventDefault();
+        }
+      });
+    </script>
+
+    <!-- site setup -->
+    <script>
       http_get_json(STORAGE_ROOT + '/models/demo/manifest.json', function(error, data) {
         if (error) {
          handleError(error);
@@ -92,64 +158,9 @@
             var option = document.createElement('option');
             option.value = model.url;
             option.textContent = model.name;
-            service_input.appendChild(option);
+            SERVICE_INPUT.appendChild(option);
           });
         }
-      });
-
-      var classifier_is_running = false;
-
-      url_input.addEventListener('keyup', function(e) {
-        if (e.keyCode === 13 || e.which === 13) {
-          analyze_trigger.click();
-          e.preventDefault();
-        }
-      });
-
-      function run_classifier(true_label) {
-        if (classifier_is_running) {
-          return;
-        }
-
-        classifier_is_running = true;
-        var request_start = new Date();
-        var request_url = service_input.value + '/v1/finish?image_url=' + encodeURIComponent(url_input.value);
-        http_get_json(request_url, function(error, data) {
-          var request_end = new Date();
-          if (error) {
-            handleError(error);
-          } else {
-            result_output.innerHTML = JSON.stringify(data, null, 2);
-            var best_finish = data.finishes.reduce(function(a, b) { return a.score > b.score ? a : b; }, {score: -1, name: 'unclassified'});
-            if (!best_finish) {
-              best_finish = data.color_families.reduce(function(a, b) { return a.score > b.score ? a : b; }, {score: -1, name: 'unclassified'});
-            }
-            var summary = 'Most likely <em>' + best_finish.name + '</em>';
-            if (true_label) {
-              if (true_label === best_finish.name) {
-                summary += ' <span class="correct">&#10004;</span>';
-              } else {
-                summary += ' <span class="incorrect">&#10008; (real label: ' + true_label + ')</span>';
-              }
-            }
-            summary_output.innerHTML = summary;
-          }
-          runtime_output.innerHTML = 'Runtime: ' + (request_end - request_start) + 'ms';
-          analyze_trigger.disabled = false;
-          analyze_trigger.innerHTML = 'Analyze!';
-          classifier_is_running = false;
-        });
-        analyze_trigger.disabled = true;
-        analyze_trigger.innerHTML = '&hellip;';
-        result_output.innerHTML = '&hellip;';
-        summary_output.innerHTML = '&hellip;';
-        runtime_output.innerHTML = '&hellip;';
-        image_output.src = url_input.value;
-        image_output.style = 'display:block;';
-      }
-
-      analyze_trigger.addEventListener('click', function() {
-        run_classifier(null);
       });
 
       http_get_json(STORAGE_ROOT + '/images/validation/manifest.json', function(error, data) {
@@ -160,15 +171,16 @@
             var img = document.createElement('img');
             img.src = STORAGE_ROOT + '/images/validation/' + image.url;
             img.addEventListener('click', function() {
-              url_input.value = img.src;
+              URL_INPUT.value = img.src;
               var url_parts = image.url.split('/');
               var true_label = url_parts[url_parts.length - 2];
               run_classifier(true_label);
             });
-            samples_input.appendChild(img);
+            SAMPLES_INPUT.appendChild(img);
           });
         }
       });
     </script>
+
   </body>
 </html>
