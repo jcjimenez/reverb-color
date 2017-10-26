@@ -29,9 +29,10 @@ def identify_models(dirs_list):
 
 def generate_models(model_paths, architecture, output_dir):
     temporary_dir = tempfile.gettempdir()
-    training_data_dir = os.path.join(temporary_dir, "tf_training_data")
-    os.makedirs(training_data_dir, exist_ok=True)
-    os.makedirs(output_dir, exist_ok=True)
+    training_data_basename = "tf_training_data_%s" % str(uuid.uuid4())
+    training_data_dir = os.path.join(temporary_dir, training_data_basename)
+    os.makedirs(training_data_dir, exist_ok=False)
+    os.makedirs(output_dir, exist_ok=False)
 
     for model_path in model_paths:
         print ("Generating model for: %s" % model_path)
@@ -46,9 +47,7 @@ def generate_models(model_paths, architecture, output_dir):
             object_class_temp = os.path.join(model_temp, object_class_name)
             os.makedirs(object_class_temp, exist_ok=True)
             for file_source in glob.iglob("%s/**/*.jpg" % object_class_path, recursive=True):
-                # print ("Copying %s to %s" % (file_source, object_class_temp))
                 shutil.copy(file_source, object_class_temp)
-        # python3 retrain.py --architecture mobilenet_0.25_128_quantized --image_dir color-families-128 --output_graph model/color-families/graph.pb --output_labels model/color-families/labels.txt
         model_output_dir = os.path.join(output_dir, model_name)
         os.makedirs(model_output_dir, exist_ok=True)
         model_output_graph = os.path.join(model_output_dir, "graph.pb")
