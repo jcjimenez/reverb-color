@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Reverb finish detection test page</title>
+    <style>
+      body {
+        font-size: 1.25em;
+      }
+      #service, #url, #analyze {
+        padding: 0.5em;
+      }
+      #url {
+        width: 30em;
+      }
+      #image, #samples {
+        margin-top: 1em;
+        margin-bottom: 1em;
+      }
+      em {
+        font-weight: bold;
+      }
+      #samples > img {
+        width: 2em;
+      }
+      #samples > img:hover {
+        border: 2px solid #333;
+      }
+    </style>
+  </head>
+  <body>
+    <form>
+      <select id="service">
+        <option value="http://reverbcvserver.eastus.cloudapp.azure.com">CustomVision.ai</option>
+        <option value="http://reverbcvserver.eastus.cloudapp.azure.com:8000">Inception</option>
+      </select>
+
+      <input id="url" type="url" placeholder="Insert URL to image to analyze here">
+
+      <button type="submit" id="analyze">Analyze!</button>
+    </form>
+
+    <div id="samples"></div>
+    <img id="image" src="" style="display:none;">
+    <pre id="summary"></pre>
+    <pre id="runtime"></pre>
+    <pre id="result"></pre>
+
+    <script>
+      function http_get_json(url, callback) {
+        var http_request = new XMLHttpRequest();
+        http_request.onreadystatechange = function() {
+          if (http_request.readyState == 4 && http_request.status == 200) {
+            try {
+              callback(null, JSON.parse(http_request.responseText));
+            } catch (e) {
+              callback(e, null);
+            }
+          }
+        };
+        http_request.open('GET', url, true);
+        http_request.send(null);
+      }
+
+      function handleError(error) {
+        console.error(error);
+        alert('Something went wrong :(');
+      }
+
+      var samples_input = document.getElementById('samples');
+      var service_input = document.getElementById('service');
+      var url_input = document.getElementById('url');
+      var result_output = document.getElementById('result');
+      var runtime_output = document.getElementById('runtime');
+      var summary_output = document.getElementById('summary');
+      var analyze_trigger = document.getElementById('analyze');
+      var image_output = document.getElementById('image');
+
+      analyze_trigger.addEventListener('click', function() {
+        var request_url = service_input.value + '/v1/finish?image_url=' + encodeURIComponent(url_input.value);
+        var request_start = new Date();
+        http_get_json(request_url, function(error, data) {
+          var request_end = new Date();
+          if (error) {
+            handleError(error);
+          } else {
+            console.log(request_url);
+            console.log(data);
+            result_output.innerHTML = JSON.stringify(data, null, 2);
+            var best_family = data.color_families.sort(function(a, b) { return a.score < b.score; })[0];
+            var best_finish = data.finishes.sort(function(a, b) { return a.score < b.score; })[0];
+            summary_output.innerHTML = 'Most likely <em>' + best_family.name + '</em> and <em>' + best_finish.name + '</em>';
+          }
+          analyze_trigger.disabled = false;
+          analyze_trigger.innerHTML = 'Analyze!';
+          runtime_output.innerHTML = 'Runtime: ' + (request_end - request_start) + 'ms';
+        });
+        analyze_trigger.disabled = true;
+        analyze_trigger.innerHTML = '&hellip;';
+        result_output.innerHTML = '&hellip;';
+        summary_output.innerHTML = '&hellip;';
+        runtime_output.innerHTML = '&hellip;';
+        image_output.src = url_input.value;
+        image_output.style = 'display:block;';
+      });
+
+      http_get_json('/data/validation/manifest.json', function(error, data) {
+        if (error) {
+          handleError(error);
+        } else {
+          data.images.forEach(function(image) {
+            var img = document.createElement('img');
+            img.src = '/data/validation/' + image.url;
+            img.addEventListener('click', function() {
+              url_input.value = img.src;
+              analyze_trigger.click();
+            });
+            samples_input.appendChild(img);
+          });
+        }
+      });
+    </script>
+  </body>
+</html>

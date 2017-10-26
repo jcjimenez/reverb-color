@@ -6,6 +6,11 @@ from shutil import unpack_archive
 import hug
 import requests
 import tensorflow as tf
+from hug_middleware_cors import CORSMiddleware
+
+
+api = hug.API(__name__)
+api.http.add_middleware(CORSMiddleware(api))
 
 
 def load_graph(filename):

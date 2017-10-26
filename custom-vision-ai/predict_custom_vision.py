@@ -9,8 +9,10 @@ from custom_vision_client.prediction import PredictionConfig
 from sanic import Sanic
 from sanic.request import Request
 from sanic.response import json
+from sanic_cors import CORS
 
 app = Sanic(__name__)
+CORS(app)
 
 
 def _classify(model_name: Text, image_url: Text) -> List[Prediction]:
