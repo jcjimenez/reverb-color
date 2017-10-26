@@ -65,6 +65,11 @@
         http_request.send(null);
       }
 
+      function handleError(error) {
+        console.error(error);
+        alert('Something went wrong :(');
+      }
+
       var samples_input = document.getElementById('samples');
       var service_input = document.getElementById('service');
       var url_input = document.getElementById('url');
@@ -80,9 +85,7 @@
         http_get_json(request_url, function(error, data) {
           var request_end = new Date();
           if (error) {
-            console.error(request_url);
-            console.error(error);
-            result_output.innerHTML = 'ERROR';
+            handleError(error);
           } else {
             console.log(request_url);
             console.log(data);
@@ -105,17 +108,19 @@
       });
 
       http_get_json('/data/validation/manifest.json', function(error, data) {
-        if (error) { return console.error(error); }
-
-        data.images.forEach(function(image) {
-          var img = document.createElement('img');
-          img.src = '/data/validation/' + image.url;
-          img.addEventListener('click', function() {
-            url_input.value = img.src;
-            analyze_trigger.click();
+        if (error) {
+          handleError(error);
+        } else {
+          data.images.forEach(function(image) {
+            var img = document.createElement('img');
+            img.src = '/data/validation/' + image.url;
+            img.addEventListener('click', function() {
+              url_input.value = img.src;
+              analyze_trigger.click();
+            });
+            samples_input.appendChild(img);
           });
-          samples_input.appendChild(img);
-        });
+        }
       });
     </script>
   </body>
