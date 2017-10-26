@@ -14,7 +14,36 @@ Then make HTTP request to the service with something like (make sure commas are 
 curl 'http://localhost:8000/v1/finish?image_url=http://res.cloudinary.com/reverb/image/upload/s---YUQ-2CS--/c_thumb%2Ch_320%2Cw_320/rpxkfvq8wnvui2bxvfif.jpg'
 ```
 
-# Retrain the model
+# Retrain multiple models
+
+Make sure you have a directory that contains directories representing 128x128
+image classes that looks something like this:
+
+```
+color-families
+├── green
+│   ├── olive
+|   │   ├── qweixldfjuwendksirns.jpg
+|   │   └── rpxkfvq8wnvui2bxvfif.jpg
+│   ├── seafoam
+|   │   ├── qweixldfjuwendksirns.jpg
+|   │   └── rpxkfvq8wnvui2bxvfif.jpg
+└── blue
+    ├── daphne-blue
+    │   ├── qweixldfjuwendksirns.jpg
+    │   └── rpxkfvq8wnvui2bxvfif.jpg
+    └── electric-blue
+        ├── qweixldfjuwendksirns.jpg
+        └── rpxkfvq8wnvui2bxvfif.jpg
+```
+
+Then run something like the following for mobilenet:
+
+```
+python3 generate_models --image_dir=color-families --output_dir=model-mobilenet
+```
+
+# Retrain a single model
 Make sure you have a directory that contains directories representing 128x128
 image classes that looks something like this:
 
