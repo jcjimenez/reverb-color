@@ -135,8 +135,12 @@
             summary_output.innerHTML = summary;
           }
           runtime_output.innerHTML = 'Runtime: ' + (request_end - request_start) + 'ms';
+          analyze_trigger.disabled = false;
+          analyze_trigger.innerHTML = 'Analyze!';
           classifier_is_running = false;
         });
+        analyze_trigger.disabled = true;
+        analyze_trigger.innerHTML = '&hellip;';
         result_output.innerHTML = '&hellip;';
         summary_output.innerHTML = '&hellip;';
         runtime_output.innerHTML = '&hellip;';
