@@ -129,13 +129,14 @@
         run_classifier(null);
       });
 
-      http_get_json('/data/validation/manifest.json', function(error, data) {
+      var sample_images_root = 'https://reverbinception.blob.core.windows.net/images/validation'
+      http_get_json(sample_images_root + '/manifest.json', function(error, data) {
         if (error) {
           handleError(error);
         } else {
           data.images.forEach(function(image) {
             var img = document.createElement('img');
-            img.src = '/data/validation/' + image.url;
+            img.src = sample_images_root + image.url;
             img.addEventListener('click', function() {
               url_input.value = img.src;
               var url_parts = image.url.split('/');
