@@ -66,6 +66,6 @@ args = parser.parse_args()
 
 image_dir = args.image_directory
 identified_models = identify_models(image_dir)
-print(identified_models)
+print("Found models:\n%s\n" % "\n".join(identified_models))
 
 generate_models(identified_models, args.architecture, args.output_dir)
