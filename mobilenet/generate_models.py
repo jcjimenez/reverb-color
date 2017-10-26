@@ -7,6 +7,7 @@ import glob
 import tempfile
 import shutil
 import subprocess
+import uuid
 
 def generate_model_paths(jpg_path):
     results = []
