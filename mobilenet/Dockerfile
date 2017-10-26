@@ -15,5 +15,4 @@ RUN apt-get install \
     bazel \
     -y
 
-RUN pip3 install hug
-
+RUN pip3 install hug hug_middleware_cors
