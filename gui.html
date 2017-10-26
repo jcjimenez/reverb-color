@@ -121,6 +121,9 @@
           } else {
             result_output.innerHTML = JSON.stringify(data, null, 2);
             var best_finish = data.finishes.reduce(function(a, b) { return a.score > b.score ? a : b; }, {score: -1, name: 'unclassified'});
+            if (!best_finish) {
+              best_finish = data.color_families.reduce(function(a, b) { return a.score > b.score ? a : b; }, {score: -1, name: 'unclassified'});
+            }
             var summary = 'Most likely <em>' + best_finish.name + '</em>';
             if (true_label) {
               if (true_label === best_finish.name) {
