@@ -1,6 +1,29 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
   <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
     <title>Reverb finish detection test page</title>
+    <style>
+      body {
+        font-size: 1.25em;
+      }
+      #service, #url, #analyze {
+        padding: 0.5em;
+      }
+      #url {
+        width: 30em;
+      }
+      #image {
+        margin-top: 1em;
+        margin-bottom: 1em;
+      }
+      em {
+        font-weight: bold;
+      }
+    </style>
   </head>
   <body>
     <form>
@@ -9,11 +32,13 @@
         <option value="http://reverbcvserver.eastus.cloudapp.azure.com:8000">Inception</option>
       </select>
 
-      <input id="url" placeholder="Insert URL to image to analyze here">
+      <input id="url" type="url" placeholder="Insert URL to image to analyze here">
 
       <button type="submit" id="analyze">Analyze!</button>
     </form>
 
+    <img id="image" src="" style="display:none;">
+    <pre id="summary"></pre>
     <pre id="runtime"></pre>
     <pre id="result"></pre>
 
@@ -37,7 +62,9 @@
       var url_input = document.getElementById('url');
       var result_output = document.getElementById('result');
       var runtime_output = document.getElementById('runtime');
+      var summary_output = document.getElementById('summary');
       var analyze_trigger = document.getElementById('analyze');
+      var image_output = document.getElementById('image');
 
       analyze_trigger.addEventListener('click', function() {
         var request_url = service_input.value + '/v1/finish?image_url=' + encodeURIComponent(url_input.value);
@@ -52,6 +79,9 @@
             console.log(request_url);
             console.log(data);
             result_output.innerHTML = JSON.stringify(data, null, 2);
+            var best_family = data.color_families.sort(function(a, b) { return a.score < b.score; })[0];
+            var best_finish = data.finishes.sort(function(a, b) { return a.score < b.score; })[0];
+            summary_output.innerHTML = 'Most likely <em>' + best_family.name + '</em> and <em>' + best_finish.name + '</em>';
           }
           analyze_trigger.disabled = false;
           analyze_trigger.innerHTML = 'Analyze!';
@@ -59,6 +89,11 @@
         });
         analyze_trigger.disabled = true;
         analyze_trigger.innerHTML = '&hellip;';
+        result_output.innerHTML = '&hellip;';
+        summary_output.innerHTML = '&hellip;';
+        runtime_output.innerHTML = '&hellip;';
+        image_output.src = url_input.value;
+        image_output.style = 'display:block;';
       });
     </script>
   </body>
