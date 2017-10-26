@@ -17,6 +17,8 @@ RUN apt-get install \
 
 RUN pip3 install hug hug_middleware_cors
 
+ENV TF_MODEL_URL "https://reverb904af5d223d2.blob.core.windows.net/training/model-mobilenet_0.25_128_quantized-2017-11-25.tgz"
+
 ADD predict.py /app/server.py
 EXPOSE 80
 CMD ["hug", "-f", "/app/server.py", "--port", "80"]
