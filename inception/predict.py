@@ -56,7 +56,7 @@ for k, graph in MODELS.items():
 
 def load_labels(filename):
     """Read in labels, one label per line."""
-    return [line.rstrip() for line in tf.gfile.GFile(filename)]
+    return [line.rstrip().replace(" ", "-") for line in tf.gfile.GFile(filename)]
 
 
 def run_graph(image_data, labels, input_layer_name, output_layer_name, num_top_predictions):
