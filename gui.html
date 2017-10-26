@@ -20,6 +20,9 @@
         margin-top: 1em;
         margin-bottom: 1em;
       }
+      #image {
+        width: 15em;
+      }
       em {
         font-weight: bold;
       }
@@ -28,6 +31,12 @@
       }
       #samples > img:hover {
         border: 2px solid #333;
+      }
+      .correct {
+        color: #008000;
+      }
+      .incorrect {
+        color: #800000;
       }
     </style>
   </head>
@@ -79,9 +88,16 @@
       var analyze_trigger = document.getElementById('analyze');
       var image_output = document.getElementById('image');
 
-      analyze_trigger.addEventListener('click', function() {
-        var request_url = service_input.value + '/v1/finish?image_url=' + encodeURIComponent(url_input.value);
+      var classifier_is_running = false;
+
+      function run_classifier(true_label) {
+        if (classifier_is_running) {
+          return;
+        }
+
+        classifier_is_running = true;
         var request_start = new Date();
+        var request_url = service_input.value + '/v1/finish?image_url=' + encodeURIComponent(url_input.value);
         http_get_json(request_url, function(error, data) {
           var request_end = new Date();
           if (error) {
@@ -92,31 +108,43 @@
             result_output.innerHTML = JSON.stringify(data, null, 2);
             var best_family = data.color_families.sort(function(a, b) { return a.score < b.score; })[0];
             var best_finish = data.finishes.sort(function(a, b) { return a.score < b.score; })[0];
-            summary_output.innerHTML = 'Most likely <em>' + best_family.name + '</em> and <em>' + best_finish.name + '</em>';
+            var summary = 'Most likely <em>' + best_finish.name + '</em>';
+            if (true_label) {
+              if (true_label === best_finish.name) {
+                summary += ' <span class="correct">&#10004;</span>';
+              } else {
+                summary += ' <span class="incorrect">&#10008; (real label: ' + true_label + ')</span>';
+              }
+            }
+            summary_output.innerHTML = summary;
           }
-          analyze_trigger.disabled = false;
-          analyze_trigger.innerHTML = 'Analyze!';
           runtime_output.innerHTML = 'Runtime: ' + (request_end - request_start) + 'ms';
+          classifier_is_running = false;
         });
-        analyze_trigger.disabled = true;
-        analyze_trigger.innerHTML = '&hellip;';
         result_output.innerHTML = '&hellip;';
         summary_output.innerHTML = '&hellip;';
         runtime_output.innerHTML = '&hellip;';
         image_output.src = url_input.value;
         image_output.style = 'display:block;';
+      }
+
+      analyze_trigger.addEventListener('click', function() {
+        run_classifier(null);
       });
 
-      http_get_json('/data/validation/manifest.json', function(error, data) {
+      var sample_images_root = 'https://reverbinception.blob.core.windows.net/images/validation'
+      http_get_json(sample_images_root + '/manifest.json', function(error, data) {
         if (error) {
           handleError(error);
         } else {
           data.images.forEach(function(image) {
             var img = document.createElement('img');
-            img.src = '/data/validation/' + image.url;
+            img.src = sample_images_root + image.url;
             img.addEventListener('click', function() {
               url_input.value = img.src;
-              analyze_trigger.click();
+              var url_parts = image.url.split('/');
+              var true_label = url_parts[url_parts.length - 2];
+              run_classifier(true_label);
             });
             samples_input.appendChild(img);
           });
