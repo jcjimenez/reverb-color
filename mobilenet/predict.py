@@ -6,6 +6,10 @@ import os
 import requests
 import sys
 import tensorflow as tf
+from hug_middleware_cors import CORSMiddleware
+
+api = hug.API(__name__)
+api.http.add_middleware(CORSMiddleware(api))
 
 def load_graph(model_file):
   graph = tf.Graph()
