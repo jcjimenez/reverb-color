@@ -41,16 +41,14 @@
     </style>
   </head>
   <body>
-    <form>
-      <select id="service">
-        <option value="http://reverbcvserver.eastus.cloudapp.azure.com">CustomVision.ai</option>
-        <option value="http://reverbcvserver.eastus.cloudapp.azure.com:8000">Inception</option>
-      </select>
+    <select id="service">
+      <option value="http://reverbcvserver.eastus.cloudapp.azure.com">CustomVision.ai</option>
+      <option value="http://reverbcvserver.eastus.cloudapp.azure.com:8000">Inception</option>
+    </select>
 
-      <input id="url" type="url" placeholder="Insert URL to image to analyze here">
+    <input id="url" type="url" placeholder="Insert URL to image to analyze here">
 
-      <button type="submit" id="analyze">Analyze!</button>
-    </form>
+    <button id="analyze">Analyze!</button>
 
     <div id="samples"></div>
     <img id="image" src="" style="display:none;">
@@ -89,6 +87,13 @@
       var image_output = document.getElementById('image');
 
       var classifier_is_running = false;
+
+      url_input.addEventListener('keyup', function(e) {
+        if (e.keyCode === 13 || e.which === 13) {
+          analyze_trigger.click();
+          e.preventDefault();
+        }
+      });
 
       function run_classifier(true_label) {
         if (classifier_is_running) {
