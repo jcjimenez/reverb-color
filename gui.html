@@ -27,10 +27,17 @@
       em {
         font-weight: bold;
       }
-      #samples > img {
-        width: 2em;
+      #samples {
+        list-style-type: none;
       }
-      #samples > img:hover {
+      #samples li {
+        display: inline-block;
+      }
+      #samples img {
+        width: 2em;
+        border: 2px solid #fff;
+      }
+      #samples img:hover {
         border: 2px solid #333;
       }
       .correct {
@@ -47,7 +54,7 @@
     <input id="url" type="url" placeholder="Insert URL to image to analyze here">
     <button id="analyze">Analyze!</button>
 
-    <div id="samples"></div>
+    <ul id="samples"></ul>
     <img id="image" src="" style="display:none;">
 
     <pre id="summary"></pre>
@@ -168,6 +175,7 @@
           handleError(error);
         } else {
           data.images.forEach(function(image) {
+            var li = document.createElement('li');
             var img = document.createElement('img');
             img.src = STORAGE_ROOT + '/images/validation/' + image.url;
             img.addEventListener('click', function() {
@@ -176,7 +184,8 @@
               var true_label = url_parts[url_parts.length - 2];
               run_classifier(true_label);
             });
-            SAMPLES_INPUT.appendChild(img);
+            li.appendChild(img);
+            SAMPLES_INPUT.appendChild(li);
           });
         }
       });
