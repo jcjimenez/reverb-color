@@ -18,7 +18,7 @@ requires ruby.
 sudo ./dev/build
 ```
 
-## Running api service
+## Running web service
 
 ```
 sudo ./dev/run
@@ -45,6 +45,4 @@ th creatMask.lua ~/data/exps/sharpmask/exp/bestmodel.t7 -img /path/to/img -outpu
 
 Via http:
 
-```
-curl -XPOST host:8888/mask -d '{"image":"https://reverb.com/image_url"}' > response.jpg
-```
+Navigate to `host:8888` to upload an image to be masked.
