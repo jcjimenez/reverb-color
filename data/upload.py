@@ -6,7 +6,7 @@ from azure.storage.blob import BlockBlobService
 
 def upload_to_blob(account_name, account_key, container_name, folder):
     blob = BlockBlobService(account_name, account_key)
-    blob.create_container(container_name)
+    blob.create_container(container_name, public_access='container')
     for path in iglob(join(folder, '**', '*.*'), recursive=True):
         blob.create_blob_from_path(container_name, path, path)
 
