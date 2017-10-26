@@ -15,11 +15,12 @@ RUN luarocks install http://raw.githubusercontent.com/baidu-research/warp-ctc/ma
 RUN luarocks install optim
 RUN luarocks install inn
 RUN sudo apt-get install -y libcudnn5 libcudnn5-dev
-RUN pip install flask
+RUN luarocks install https://raw.githubusercontent.com/benglard/htmlua/master/htmlua-scm-1.rockspec
+RUN luarocks install https://raw.githubusercontent.com/benglard/waffle/master/waffle-scm-1.rockspec
 ENV CUDNN_PATH=/usr/lib/x86_64-linux-gnu/libcudnn.so.5
 RUN mkdir /root/data
 RUN sed -i "s/  local cat,ann = torch.random(80)/  local cat,ann = torch.random(1)/" /root/deepmask/DataSampler.lua
 RUN mkdir /root/deepmask/api
 COPY ./createMask.lua /root/deepmask/
-COPY ./api /root/deepmask/api
+COPY ./app.lua /root/deepmask/
 WORKDIR /root/deepmask
