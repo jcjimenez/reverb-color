@@ -16,12 +16,18 @@
       #url {
         width: 30em;
       }
-      #image {
+      #image, #samples {
         margin-top: 1em;
         margin-bottom: 1em;
       }
       em {
         font-weight: bold;
+      }
+      #samples > img {
+        width: 2em;
+      }
+      #samples > img:hover {
+        border: 2px solid #333;
       }
     </style>
   </head>
@@ -37,6 +43,7 @@
       <button type="submit" id="analyze">Analyze!</button>
     </form>
 
+    <div id="samples"></div>
     <img id="image" src="" style="display:none;">
     <pre id="summary"></pre>
     <pre id="runtime"></pre>
@@ -58,6 +65,7 @@
         http_request.send(null);
       }
 
+      var samples_input = document.getElementById('samples');
       var service_input = document.getElementById('service');
       var url_input = document.getElementById('url');
       var result_output = document.getElementById('result');
@@ -94,6 +102,20 @@
         runtime_output.innerHTML = '&hellip;';
         image_output.src = url_input.value;
         image_output.style = 'display:block;';
+      });
+
+      http_get_json('/data/validation/manifest.json', function(error, data) {
+        if (error) { return console.error(error); }
+
+        data.images.forEach(function(image) {
+          var img = document.createElement('img');
+          img.src = '/data/validation/' + image.url;
+          img.addEventListener('click', function() {
+            url_input.value = img.src;
+            analyze_trigger.click();
+          });
+          samples_input.appendChild(img);
+        });
       });
     </script>
   </body>
