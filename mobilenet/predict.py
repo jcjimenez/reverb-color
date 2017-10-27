@@ -40,9 +40,9 @@ if not glob(os.path.join('model', '*')):
 
 
 MODELS = {}
-for k in ["black", "blue", "brown", "burst", "color-families", "green", "orange", "red", "white", "yellow"]:
-    print("Loading model %s" % k)
-    MODELS[k] = load_graph(os.path.join("model", k, "graph.pb"))
+for model_name in os.listdir("model"):
+    print("Loading model %s" % model_name)
+    MODELS[model_name] = load_graph(os.path.join("model", model_name, "graph.pb"))
 
 def read_tensor_from_image_file(image_url, input_height=128, input_width=128, input_mean=0, input_std=255):
   input_name = "file_reader"
@@ -105,5 +105,27 @@ def predict_finish(image_url: hug.types.text):
         finishes = run_graph_v2(MODELS[selected_family['name']], image_tensor, finish_label_path)
     return {
         "color_families": families,
+        "finishes": finishes
+    }
+
+@hug.get('/finish', versions=2, output=hug.output_format.json)
+def predict_finish(image_url: hug.types.text):
+    if not "finishes" in MODELS:
+        return {
+            "color_families": [],
+            "finishes": []
+        }
+    finishes_graph = MODELS["finishes"]
+    input_layer = "input"
+    output_layer = "final_result"
+    image_tensor = read_tensor_from_image_file(image_url,
+                                input_height=128,
+                                input_width=128,
+                                input_mean=128,
+                                input_std=128)
+    family_label_path = "model/finishes/labels.txt"
+    finishes = run_graph_v2(finishes_graph, image_tensor, family_label_path)
+    return {
+        "color_families": [],
         "finishes": finishes
     }

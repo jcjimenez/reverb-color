@@ -40,7 +40,7 @@ color-families
 Then run something like the following for mobilenet:
 
 ```
-python3 generate_models --image_dir=color-families --output_dir=model-mobilenet
+python3 generate_models --architecture mobilenet_1.0_128 --image_dir=color-families --output_dir=model-mobilenet
 ```
 
 # Retrain a single model
@@ -60,7 +60,7 @@ color-families
 Then run something like the following for mobilenet:
 
 ```
-python3 retrain.py --architecture mobilenet_0.25_128_quantized --image_dir color-families-128 --output_graph model/color-families/graph.pb --output_labels model/color-families/labels.txt
+python3 retrain.py --architecture mobilenet_1.0_128 --image_dir color-families-128 --output_graph model/color-families/graph.pb --output_labels model/color-families/labels.txt
 ```
 
 The model files should be saved in a way that follows this directory structure:
