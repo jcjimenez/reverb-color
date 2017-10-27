@@ -1,0 +1,6 @@
+{"models":[
+  {"url":"http://reverbcvai2.eastus.cloudapp.azure.com","name":"CustomVision.ai (hierarchical)"},
+  {"url":"http://reverbcvai1.eastus.cloudapp.azure.com","name":"CustomVision.ai (one model)"},
+  {"url":"http://reverbcvserver.eastus.cloudapp.azure.com:8000","name":"Inception"},
+  {"url":"http://reverbcvserver.eastus.cloudapp.azure.com:8001","name":"Mobilenet"}
+]}

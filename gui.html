@@ -41,24 +41,20 @@
     </style>
   </head>
   <body>
-    <form>
-      <select id="service">
-        <option value="http://reverbcvserver.eastus.cloudapp.azure.com">CustomVision.ai</option>
-        <option value="http://reverbcvserver.eastus.cloudapp.azure.com:8000">Inception</option>
-      </select>
-
-      <input id="url" type="url" placeholder="Insert URL to image to analyze here">
-
-      <button type="submit" id="analyze">Analyze!</button>
-    </form>
+    <select id="service"></select>
+    <input id="url" type="url" placeholder="Insert URL to image to analyze here">
+    <button id="analyze">Analyze!</button>
 
     <div id="samples"></div>
     <img id="image" src="" style="display:none;">
+
     <pre id="summary"></pre>
     <pre id="runtime"></pre>
     <pre id="result"></pre>
 
     <script>
+      var STORAGE_ROOT = 'https://reverbinception.blob.core.windows.net';
+
       function http_get_json(url, callback) {
         var http_request = new XMLHttpRequest();
         http_request.onreadystatechange = function() {
@@ -88,7 +84,27 @@
       var analyze_trigger = document.getElementById('analyze');
       var image_output = document.getElementById('image');
 
+      http_get_json(STORAGE_ROOT + '/models/demo/manifest.json', function(error, data) {
+        if (error) {
+         handleError(error);
+        } else {
+          data.models.forEach(function(model) {
+            var option = document.createElement('option');
+            option.value = model.url;
+            option.textContent = model.name;
+            service_input.appendChild(option);
+          });
+        }
+      });
+
       var classifier_is_running = false;
+
+      url_input.addEventListener('keyup', function(e) {
+        if (e.keyCode === 13 || e.which === 13) {
+          analyze_trigger.click();
+          e.preventDefault();
+        }
+      });
 
       function run_classifier(true_label) {
         if (classifier_is_running) {
@@ -103,11 +119,8 @@
           if (error) {
             handleError(error);
           } else {
-            console.log(request_url);
-            console.log(data);
             result_output.innerHTML = JSON.stringify(data, null, 2);
-            var best_family = data.color_families.sort(function(a, b) { return a.score < b.score; })[0];
-            var best_finish = data.finishes.sort(function(a, b) { return a.score < b.score; })[0];
+            var best_finish = data.finishes.reduce(function(a, b) { return a.score > b.score ? a : b; }, {score: -1, name: 'unclassified'});
             var summary = 'Most likely <em>' + best_finish.name + '</em>';
             if (true_label) {
               if (true_label === best_finish.name) {
@@ -132,14 +145,13 @@
         run_classifier(null);
       });
 
-      var sample_images_root = 'https://reverbinception.blob.core.windows.net/images/validation'
-      http_get_json(sample_images_root + '/manifest.json', function(error, data) {
+      http_get_json(STORAGE_ROOT + '/images/validation/manifest.json', function(error, data) {
         if (error) {
           handleError(error);
         } else {
           data.images.forEach(function(image) {
             var img = document.createElement('img');
-            img.src = sample_images_root + image.url;
+            img.src = STORAGE_ROOT + '/images/validation/' + image.url;
             img.addEventListener('click', function() {
               url_input.value = img.src;
               var url_parts = image.url.split('/');

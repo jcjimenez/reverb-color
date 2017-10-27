@@ -1,0 +1,8 @@
+venv*/
+bin/label_image/
+model/
+reverb-data-320-clean/
+*.zip
+*.tgz
+
+.vscode/

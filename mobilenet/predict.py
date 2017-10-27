@@ -1,10 +1,13 @@
 import argparse
 import datetime
+import os
+import sys
+from glob import glob
+from shutil import unpack_archive
+
 import hug
 import numpy as np
-import os
 import requests
-import sys
 import tensorflow as tf
 from hug_middleware_cors import CORSMiddleware
 
@@ -19,6 +22,22 @@ def load_graph(model_file):
   with graph.as_default():
     tf.import_graph_def(graph_def)
   return graph
+
+
+def download_file(url, to_path='', chunk_size=1024):
+    local_filename = to_path or url.split('/')[-1]
+
+    response = requests.get(url, stream=True)
+    with open(local_filename, 'wb') as fobj:
+        for chunk in response.iter_content(chunk_size=chunk_size):
+            if chunk:
+                fobj.write(chunk)
+
+
+if not glob(os.path.join('model', '*')):
+    download_file(os.getenv('TF_MODEL_URL'), 'model.tgz')
+    unpack_archive('model.tgz')
+
 
 MODELS = {}
 for model_name in os.listdir("model"):

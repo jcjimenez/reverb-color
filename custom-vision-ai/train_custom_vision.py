@@ -2,10 +2,12 @@
 
 from argparse import ArgumentTypeError
 from glob import glob
+from itertools import groupby
 from math import floor
 from os import listdir
-from os.path import join
+from os.path import join, split
 from random import sample
+from requests.exceptions import HTTPError
 
 from custom_vision_client import TrainingClient
 from custom_vision_client import TrainingConfig
@@ -28,6 +30,10 @@ class AtMost(object):
         return number
 
 
+def group_by_labels(image_path):
+    return split(image_path)[0]
+
+
 class AllTrainingData(object):
     def __init__(self, data_root, labels=None):
         self._data_root = data_root
@@ -36,7 +42,10 @@ class AllTrainingData(object):
     def get_images(self):
         for label in self._get_labels():
             images = glob(join(self._data_root, label, '**', '*.jpg'), recursive=True)
-            yield label, images
+            grouped = groupby(images,group_by_labels)
+            for group, images in grouped:
+                labels = group.split('/')[1:]
+                yield labels, [i for i in images]
 
     def _get_labels(self):
         labels = listdir(self._data_root)
@@ -60,14 +69,14 @@ class SampledTrainingData(object):
 
         total_images = sum(len(images) for _, images in top_labels)
 
-        for label, images in top_labels:
+        for labels, images in top_labels:
             sample_importance = len(images) / total_images
             sample_size = int(floor(sample_importance * self._max_images))
             if sample_size < len(images):
                 sampled_images = sample(images, sample_size)
             else:
                 sampled_images = list(images)
-            yield label, sampled_images
+            yield labels, sampled_images
 
 
 def train(azure_region, project_name, training_key, data_dir,
@@ -78,10 +87,14 @@ def train(azure_region, project_name, training_key, data_dir,
     client._training_batch_size = 50
     project_id = client.create_project(project_name).Id
 
-    for label, images in training_data.get_images():
-        print('Got label {} with {} images'.format(label, len(images)))
-        client.create_tag(project_id, label)
-        client.add_training_images(project_id, images, label)
+    for labels, images in training_data.get_images():
+        print('Got labels {} with {} images'.format(labels, len(images)))
+        for label in labels:
+            try:
+                client.create_tag(project_id, label)
+            except HTTPError:
+                continue # hack - can't create label more than once
+        client.add_training_images(project_id, images, *labels)
 
     model_id = client.trigger_training(project_id).Id
     yield project_id, model_id
