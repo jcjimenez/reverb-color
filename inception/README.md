@@ -5,7 +5,7 @@ This directory contains a  implementation proposal based on TensorFlow and Incep
 In order to run prediction against an image, you can do this:
 
 ```
-docker-compose up
+docker run -p 8000:80 cwolff/reverbinception
 ```
 
 Then make HTTP request to the service with something like (make sure commas are URL escaped):
