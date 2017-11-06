@@ -1,0 +1,3 @@
+[submodule "frcnn/keras-frcnn"]
+	path = frcnn/keras-frcnn
+	url = https://github.com/jcjimenez/keras-frcnn.git

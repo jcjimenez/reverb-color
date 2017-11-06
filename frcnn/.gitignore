@@ -1,0 +1,10 @@
+model/
+model
+*.zip
+*.tgz
+
+.vscode/
+__pycache__/
+*.hdf5
+*.pickle
+
