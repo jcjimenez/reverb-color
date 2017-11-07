@@ -1,0 +1,11 @@
+version: '2'
+services:
+  api:
+    build:
+      context: ./
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./:/reverb-color
+    working_dir: /reverb-color
+    command: hug -f predict.py
