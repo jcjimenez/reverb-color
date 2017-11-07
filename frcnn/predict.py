@@ -3,19 +3,25 @@ from __future__ import division
 import sys
 sys.path.insert(0,'keras-frcnn')
 
-import os
-import cv2
-import numpy as np
-import sys
-import pickle
-import time
-from keras_frcnn import config
 from keras import backend as K
 from keras.layers import Input
 from keras.models import Model
+from keras_frcnn import config
 from keras_frcnn import roi_helpers
-import keras_frcnn.resnet as nn
+import cv2
+import hug
+import hug_middleware_cors
 import json
+import keras_frcnn.resnet as nn
+import numpy as np
+import os
+import pickle
+import requests
+import sys
+import time
+
+api = hug.API(__name__)                                                         
+api.http.add_middleware(hug_middleware_cors.CORSMiddleware(api))                                    
 
 sys.setrecursionlimit(40000)
 
@@ -25,6 +31,11 @@ with open("config.pickle", 'rb') as f_in:
 C.use_horizontal_flips = False
 C.use_vertical_flips = False
 C.rot_90 = False
+
+def load_image(image_url):
+	image_data = requests.get(image_url).content
+	image_array = np.asarray(bytearray(image_data), dtype="uint8")
+	return cv2.imdecode(image_array, cv2.IMREAD_COLOR)
 
 def scale_image(img, C):
 	""" formats the image size based on config """
@@ -115,21 +126,9 @@ model_classifier.load_weights(C.model_path, by_name=True)
 model_rpn.compile(optimizer='sgd', loss='mse')
 model_classifier.compile(optimizer='sgd', loss='mse')
 
-# all_imgs = []
-
-# classes = {}
-
 bbox_threshold = 0.8
 
-# visualise = True
-
-import requests
-def load_image(image_url):
-	image_data = requests.get(image_url).content
-	image_array = np.asarray(bytearray(image_data), dtype="uint8")
-	return cv2.imdecode(image_array, cv2.IMREAD_COLOR)
-
-def extract_detected_objects(R, C):
+def extract_detected_objects(R, C, features):
 	"""
 	Returns a dictionary where the key is the name of the object class and the
 	value is an array of DetectedObject instances.
@@ -149,7 +148,7 @@ def extract_detected_objects(R, C):
 			ROIs_padded[0, curr_shape[1]:, :] = ROIs[0, 0, :]
 			ROIs = ROIs_padded
 
-		[P_cls, P_regr] = model_classifier_only.predict([F, ROIs])
+		[P_cls, P_regr] = model_classifier_only.predict([features, ROIs])
 
 		for ii in range(P_cls.shape[1]):
 
@@ -180,22 +179,22 @@ def extract_detected_objects(R, C):
 			})
 	return result
 
+@hug.get('/guitar_bodies', versions=1, output=hug.output_format.json)
+def predict_finish(image_url: hug.types.text):
+	image = load_image(image_url)
+	normalized, ratio = normalize_image(image, C)
 
-image_url = "https://images.reverb.com/image/upload/s--J3gg8O0u--/a_exif,c_limit,e_unsharp_mask:80,f_auto,fl_progressive,g_south,h_1600,q_80,w_1600/v1415395952/u0ftxwzelezloz7ygmfw.jpg"
-image = load_image(image_url)
-normalized, ratio = normalize_image(image, C)
+	if K.image_dim_ordering() == 'tf':
+		normalized = np.transpose(normalized, (0, 2, 3, 1))
 
-if K.image_dim_ordering() == 'tf':
-	normalized = np.transpose(normalized, (0, 2, 3, 1))
+	# get the feature maps and output from the RPN
+	[Y1, Y2, features] = model_rpn.predict(normalized)
 
-# get the feature maps and output from the RPN
-[Y1, Y2, F] = model_rpn.predict(normalized)
+	roi = roi_helpers.rpn_to_roi(Y1, Y2, C, K.image_dim_ordering(), overlap_thresh=0.7)
 
-roi = roi_helpers.rpn_to_roi(Y1, Y2, C, K.image_dim_ordering(), overlap_thresh=0.7)
+	# convert from (x1,y1,x2,y2) to (x,y,w,h)
+	roi[:, 2] -= roi[:, 0]
+	roi[:, 3] -= roi[:, 1]
 
-# convert from (x1,y1,x2,y2) to (x,y,w,h)
-roi[:, 2] -= roi[:, 0]
-roi[:, 3] -= roi[:, 1]
-
-detected_objects = extract_detected_objects(roi, C)
-print(json.dumps(detected_objects))
+	detected_objects = extract_detected_objects(roi, C, features)
+	return detected_objects
